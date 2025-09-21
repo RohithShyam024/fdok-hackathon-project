@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fdok - Tackling Misinformation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --background: 224, 71%, 4%; /* hsl(224, 71%, 4%) */
+            --foreground: 210, 40%, 98%;
+            --card: 224, 71%, 4%;
+            --card-foreground: 210, 40%, 98%;
+            --popover: 224, 71%, 4%;
+            --popover-foreground: 210, 40%, 98%;
+            --primary: 210, 100%, 50%; /* Electric Blue */
+            --primary-foreground: 210, 40%, 98%;
+            --secondary: 217.2, 32.6%, 17.5%;
+            --secondary-foreground: 210, 40%, 98%;
+            --muted: 217.2, 32.6%, 17.5%;
+            --muted-foreground: 215, 20.2%, 65.1%;
+            --accent: 217.2, 32.6%, 17.5%;
+            --accent-foreground: 210, 40%, 98%;
+            --border: 217.2, 32.6%, 17.5%;
+            --input: 217.2, 32.6%, 17.5%;
+            --ring: 210, 100%, 50%;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        @keyframes aurora {
+            from { background-position: 50% 50%, 50% 50%; }
+            to { background-position: 350% 50%, 350% 50%; }
+        }
+        .aurora-bg {
+            position: relative;
+            background-image: radial-gradient(ellipse at 100% 0%, hsl(var(--primary), 0.15) 0%, transparent 50%), 
+                              radial-gradient(ellipse at 0% 100%, hsl(280, 100%, 50%, 0.15) 0%, transparent 50%);
+            background-size: 1000px 1000px, 800px 800px;
+            background-position: 50% 50%;
+            animation: aurora 20s linear infinite;
+        }
+        .glassmorphism {
+            background: rgba(16, 18, 27, 0.5);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: hsl(var(--accent)); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+        .pulsing-logo { animation: pulse 2s infinite ease-in-out; }
+
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        
+        @keyframes card-stagger-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-in { animation: card-stagger-in 0.5s both; }
+
+        .prose { color: hsl(var(--foreground)); }
+        .prose h1, .prose h2, .prose h3 { color: hsl(var(--foreground)); font-weight: 700; }
+        .prose strong { color: hsl(var(--primary-foreground)); }
+        .prose a { color: hsl(var(--primary)); }
+        .prose code { background-color: hsl(var(--muted)); padding: 0.2em 0.4em; border-radius: 0.3em; color: hsl(var(--muted-foreground));}
+        .prose blockquote { border-left-color: hsl(var(--border)); color: hsl(var(--muted-foreground)); }
+        
+        .bottom-nav-active i, .bottom-nav-active span { color: hsl(var(--primary)); }
+        .sidebar-btn-active { background-color: hsl(var(--accent)); color: hsl(var(--primary-foreground)); }
+    </style>
+</head>
+<body class="overflow-hidden aurora-bg">
+
+    <!-- App Container -->
+    <div id="app-container" class="h-screen w-screen text-gray-100 flex">
+        <!-- Splash Screen -->
+        <div id="splash-screen" class="w-full h-full flex flex-col items-center justify-center fade-in bg-[hsl(var(--background))]">
+            <div class="text-center p-8 max-w-md">
+                <div class="flex items-center justify-center mb-6">
+                    <svg class="w-20 h-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="url(#paint0_linear_110_2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7L12 12M12 12L22 7M12 12V22M17 4.5L7 9.5" stroke="url(#paint1_linear_110_2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="paint0_linear_110_2" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse"><stop stop-color="#00c6ff"/><stop offset="1" stop-color="#0072ff"/></linearGradient><linearGradient id="paint1_linear_110_2" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse"><stop stop-color="#00c6ff"/><stop offset="1" stop-color="#0072ff"/></linearGradient></defs></svg>
+                    <h1 class="text-6xl font-extrabold ml-4 gradient-text">Fdok</h1>
+                </div>
+                <p class="text-zinc-400 text-lg">Your AI partner in the fight against misinformation.</p>
+                <div class="mt-8 text-zinc-500 text-sm">Initializing...</div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app-view" class="w-full h-full flex hidden">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="glassmorphism border-r w-64 p-4 flex flex-col transition-all duration-300 -translate-x-full sm:translate-x-0 fixed sm:static h-full z-20">
+                <div class="flex items-center justify-between mb-6">
+                    <button id="sidebar-logo-home-btn" class="flex items-center gap-2" title="Go to Agent Hub">
+                        <svg class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7L12 12M12 12L22 7M12 12V22M17 4.5L7 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span class="text-2xl font-extrabold gradient-text">Fdok</span>
+                    </button>
+                </div>
+
+                <!-- Agent Sidebar Content -->
+                <div id="agent-sidebar">
+                    <button id="new-chat-btn" class="flex items-center gap-3 w-full p-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-200 shadow-lg mb-4">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i> New Chat
+                    </button>
+                    <div class="flex flex-col gap-2 mb-4">
+                        <button id="analysis-tools-toggle" class="flex items-center gap-2 w-full p-2.5 rounded-lg hover:bg-zinc-800 text-zinc-300 font-medium transition-colors">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-green-400"></i><span>Analysis Tools</span>
+                        </button>
+                        <div id="analysis-tools-options" class="hidden pl-4 border-l-2 border-zinc-700 ml-5 flex flex-col gap-1 py-1">
+                            <button id="link-agent-btn" class="flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors">
+                                <i data-lucide="link" class="w-4 h-4"></i> Link Agent
+                            </button>
+                            <button id="doc-agent-btn" class="flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors">
+                                <i data-lucide="file-text" class="w-4 h-4"></i> Doc Agent
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feed Sidebar Content -->
+                <div id="feed-sidebar" class="hidden">
+                     <div class="flex flex-col gap-2 mb-4">
+                        <button id="news-categories-toggle" class="flex items-center gap-2 w-full p-2.5 rounded-lg hover:bg-zinc-800 text-zinc-300 font-medium transition-colors">
+                            <i data-lucide="layout-grid" class="w-5 h-5 text-purple-400"></i><span>All Feeds</span>
+                        </button>
+                        <div id="news-categories-options" class="hidden pl-4 border-l-2 border-zinc-700 ml-5 flex flex-col gap-1 py-1">
+                            <button class="news-category-btn flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors" data-category="misinfo">Misinformation & Scams</button>
+                            <button class="news-category-btn flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors" data-category="all">All News</button>
+                            <button class="news-category-btn flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors" data-category="politics">Politics</button>
+                            <button class="news-category-btn flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors" data-category="sports">Sports</button>
+                        </div>
+                    </div>
+                     <div class="flex flex-col gap-2 mb-4">
+                        <button id="feed-tool-toggle" class="flex items-center gap-2 w-full p-2.5 rounded-lg hover:bg-zinc-800 text-zinc-300 font-medium transition-colors">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-yellow-400"></i><span>Feed Tools</span>
+                        </button>
+                        <div id="feed-tool-options" class="hidden pl-4 border-l-2 border-zinc-700 ml-5 flex flex-col gap-1 py-1">
+                            <button id="one-minuter-btn" class="flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors">
+                               <i data-lucide="timer" class="w-4 h-4"></i> ✨ One-Minuter
+                            </button>
+                             <button id="ask-bot-news-btn" class="flex items-center gap-3 w-full p-2 rounded-md hover:bg-zinc-700/50 text-zinc-400 text-sm font-medium transition-colors">
+                                <i data-lucide="bot" class="w-4 h-4"></i> Ask the Bot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-y-auto">
+                     <div id="chat-history-container">
+                        <h3 class="text-sm font-semibold text-zinc-500 px-2 mb-2">History</h3>
+                        <div id="history-container" class="flex flex-col gap-1">
+                             <div class="text-xs text-zinc-600 px-2">Your chat history is empty.</div>
+                        </div>
+                    </div>
+                    <div id="article-history-container" class="hidden">
+                        <h3 class="text-sm font-semibold text-zinc-500 px-2 mb-2">Recently Viewed</h3>
+                        <div id="article-history" class="flex flex-col gap-1">
+                           <div class="text-xs text-zinc-600 px-2">No recently viewed articles.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-zinc-800/50 flex flex-col gap-2">
+                    <button id="settings-btn" class="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-zinc-800 text-zinc-300 font-medium transition-colors">
+                        <i data-lucide="settings" class="w-5 h-5"></i> Settings
+                    </button>
+                    <button id="help-btn" class="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-zinc-800 text-zinc-300 font-medium transition-colors">
+                        <i data-lucide="help-circle" class="w-5 h-5"></i> Help
+                    </button>
+                </div>
+            </aside>
+            
+            <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-10 hidden sm:hidden" ></div>
+
+            <!-- Main Content -->
+            <main id="main-content" class="flex-1 flex flex-col h-screen min-w-0 relative">
+                <header class="flex items-center justify-between p-4 border-b border-zinc-800/50">
+                    <div class="flex items-center gap-3">
+                        <button id="menu-toggle-btn" class="sm:hidden p-2 rounded-md hover:bg-zinc-800">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                        <h2 id="view-title" class="text-lg font-semibold text-zinc-200">Fdok Agent</h2>
+                    </div>
+                    <div class="relative">
+                        <button id="profile-btn" class="w-10 h-10 rounded-full overflow-hidden border-2 border-zinc-700 hover:border-blue-500 transition-colors">
+                            <img id="user-avatar" src="https://placehold.co/40x40/0A0A0A/a1a1aa?text=U" alt="User Avatar">
+                        </button>
+                        <div id="profile-dropdown" class="absolute right-0 mt-2 w-48 glassmorphism rounded-lg shadow-xl hidden z-10 fade-in">
+                            <a id="profile-details-btn" href="#" class="block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50">Profile Details</a>
+                            <div class="px-4 py-2 text-sm text-zinc-500">DjangO build</div>
+                            <hr class="border-zinc-700/50">
+                            <a id="logout-btn" href="#" class="block px-4 py-2 text-sm text-red-400 hover:bg-zinc-800/50">Logout</a>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Content Area -->
+                <div id="content-views" class="flex-1 overflow-y-auto relative pb-24">
+                    <!-- Analysis Hub View (Contains all agent screens) -->
+                    <div id="analysis-hub-view">
+                        <!-- Agent Home / Hub -->
+                        <div id="agent-hub-view" class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto h-full flex flex-col justify-center items-center">
+                            <div class="relative flex items-center justify-center w-64 h-64 mb-12">
+                                <div class="absolute inset-0 bg-blue-500 rounded-full opacity-20 blur-2xl animate-pulse"></div>
+                                <svg class="w-40 h-40 text-blue-400 pulsing-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7L12 12M12 12L22 7M12 12V22M17 4.5L7 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                
+                                <button data-action="view" data-view="link" class="action-orb absolute w-20 h-20 glassmorphism rounded-full flex items-center justify-center transition-transform hover:scale-110" style="transform: translate(-100px, -100px);">
+                                    <i data-lucide="link" class="w-8 h-8 text-blue-300"></i></button>
+                                <button data-action="view" data-view="doc" class="action-orb absolute w-20 h-20 glassmorphism rounded-full flex items-center justify-center transition-transform hover:scale-110" style="transform: translate(100px, -100px);">
+                                    <i data-lucide="file-scan" class="w-8 h-8 text-purple-300"></i></button>
+                                <button data-action="prefill" data-prompt="Verify this news headline: " class="action-orb absolute w-20 h-20 glassmorphism rounded-full flex items-center justify-center transition-transform hover:scale-110" style="transform: translate(-100px, 100px);">
+                                    <i data-lucide="check-circle" class="w-8 h-8 text-green-300"></i></button>
+                                <button data-action="prefill" data-prompt="What are the common signs of a phishing email?" class="action-orb absolute w-20 h-20 glassmorphism rounded-full flex items-center justify-center transition-transform hover:scale-110" style="transform: translate(100px, 100px);">
+                                    <i data-lucide="shield-question" class="w-8 h-8 text-yellow-300"></i></button>
+                            </div>
+                             <h1 class="text-4xl font-bold mb-2 gradient-text">Fdok Agent</h1>
+                             <p class="text-zinc-400 text-lg">Your AI co-pilot for digital safety.</p>
+                        </div>
+                        <!-- Chat Agent View -->
+                        <div id="chat-agent-view" class="hidden p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto h-full">
+                            <div id="chat-container" class="h-full flex flex-col">
+                                <div id="chat-messages" class="flex-grow space-y-6 overflow-y-auto pb-24"></div>
+                            </div>
+                        </div>
+                        <!-- Link/Doc Agent Views get injected -->
+                        <div id="link-agent-view" class="hidden p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto"></div>
+                        <div id="doc-agent-view" class="hidden p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto"></div>
+                    </div>
+                    
+                    <!-- Feed View -->
+                    <div id="feed-view" class="hidden p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+                        <div class="mb-6">
+                            <h1 class="text-3xl font-extrabold gradient-text">Fdok Feed</h1>
+                            <p class="text-zinc-400 mt-1">Stay updated on the latest digital threats and misinformation campaigns.</p>
+                        </div>
+                        <div class="relative mb-6">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"></i>
+                            <input id="feed-search-input" type="search" placeholder="Search articles by topic (e.g., 'Phishing')" class="w-full bg-zinc-800/50 border border-zinc-700/80 rounded-lg p-3 pl-12 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
+                        </div>
+                        <div id="feed-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    </div>
+                </div>
+
+                <!-- Prompt Input Area -->
+                <div id="prompt-area" class="absolute bottom-20 sm:bottom-0 w-full p-4 sm:p-6 lg:p-8 pt-0 mt-auto hidden">
+                    <div class="glassmorphism rounded-2xl p-2 flex items-center w-full max-w-4xl mx-auto shadow-2xl">
+                        <button id="media-upload-btn" title="Upload Media" class="p-2.5 rounded-full hover:bg-zinc-700/50 transition-colors relative">
+                            <i data-lucide="plus" class="w-6 h-6 text-zinc-400"></i>
+                        </button>
+                        <textarea id="prompt-input" rows="1" placeholder="Ask Fdok anything..." class="flex-grow bg-transparent p-2.5 resize-none outline-none text-zinc-200 placeholder-zinc-500"></textarea>
+                        <button id="lang-btn" title="Select Language" class="p-2.5 rounded-full hover:bg-zinc-700/50 transition-colors relative">
+                           <i data-lucide="languages" class="w-6 h-6 text-zinc-400"></i>
+                        </button>
+                        <button id="send-btn" title="Send Message" class="p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors">
+                            <i data-lucide="arrow-up" class="w-6 h-6 text-white"></i>
+                        </button>
+                    </div>
+                     <!-- Popovers -->
+                    <div id="lang-popover" class="absolute bottom-24 right-8 glassmorphism w-48 rounded-lg shadow-xl hidden z-10 fade-in"></div>
+                    <div id="media-popover" class="absolute bottom-24 left-8 glassmorphism w-56 rounded-lg shadow-xl hidden z-10 fade-in"></div>
+                    <p class="text-xs text-center text-zinc-600 mt-2">Fdok may display inaccurate info, so double-check its responses.</p>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <nav id="bottom-nav" class="absolute bottom-0 left-0 right-0 glassmorphism border-t flex justify-around items-center h-20">
+                    <button id="bottom-nav-agent" class="bottom-nav-btn flex flex-col items-center justify-center text-zinc-400 transition-colors bottom-nav-active">
+                        <i data-lucide="bot" class="w-6 h-6 mb-1"></i>
+                        <span class="text-xs font-medium">Agent</span>
+                    </button>
+                    <button id="bottom-nav-feed" class="bottom-nav-btn flex flex-col items-center justify-center text-zinc-400 transition-colors">
+                        <i data-lucide="newspaper" class="w-6 h-6 mb-1"></i>
+                        <span class="text-xs font-medium">Feed</span>
+                    </button>
+                </nav>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="modal-container"></div>
+
+    <script type="module">
+        // --- App State & UI References ---
+        let chatHistory = [], currentAgentView = 'hub', chatMode = 'general', currentLanguage = 'English', currentFeedCategory = 'misinfo';
+        let mainAppView, userAvatar, profileBtn, profileDropdown, logoutBtn, menuToggleBtn, sidebar, sidebarOverlay, promptInput, sendBtn, chatMessagesContainer, modalContainer, promptArea, agentSidebar, feedSidebar;
+
+        // --- App Initialization ---
+        function initializeFdokApp() {
+            // Assign all DOM elements
+            const splashScreen = document.getElementById('splash-screen');
+            mainAppView = document.getElementById('main-app-view');
+            userAvatar = document.getElementById('user-avatar');
+            profileBtn = document.getElementById('profile-btn');
+            logoutBtn = document.getElementById('logout-btn');
+            menuToggleBtn = document.getElementById('menu-toggle-btn');
+            sidebar = document.getElementById('sidebar');
+            sidebarOverlay = document.getElementById('sidebar-overlay');
+            promptInput = document.getElementById('prompt-input');
+            sendBtn = document.getElementById('send-btn');
+            chatMessagesContainer = document.getElementById('chat-messages');
+            modalContainer = document.getElementById('modal-container');
+            promptArea = document.getElementById('prompt-area');
+            agentSidebar = document.getElementById('agent-sidebar');
+            feedSidebar = document.getElementById('feed-sidebar');
+
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                mainAppView.classList.remove('hidden');
+                mainAppView.classList.add('flex', 'fade-in');
+                setTimeout(() => splashScreen.classList.add('hidden'), 500);
+            }, 50);
+
+            injectContent();
+            setupEventListeners();
+            filterFeedByCategory(currentFeedCategory);
+            lucide.createIcons();
+        }
+
+        // --- Content Injection ---
+        function injectContent() {
+            document.getElementById('link-agent-view').innerHTML = `<div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-2xl"><h2 class="text-3xl font-bold mb-2 gradient-text">Link Agent</h2><p class="text-zinc-400 mb-6">Paste a suspicious link below to check for scams, malware, and misinformation.</p><div class="flex gap-2 mb-4"><input id="link-input" type="url" placeholder="https://example.com" class="flex-grow bg-zinc-800/80 border border-zinc-700 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"><button id="analyze-link-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 shadow-lg gap-2"><span id="analyze-link-text">✨ Analyze</span><div id="analyze-link-loader" class="hidden pulsing-logo"><svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></button></div><div id="link-result" class="hidden mt-8 fade-in prose max-w-none prose-invert"></div></div>`;
+            document.getElementById('doc-agent-view').innerHTML = `<div id="doc-agent-initial" class="flex flex-col items-center justify-center h-full text-center"><h2 class="text-3xl font-bold mb-2 gradient-text">Document Agent</h2><p class="text-zinc-400 mb-8 max-w-lg">Verify documents for authenticity, get legal insights, or chat with our AI legal assistant.</p><div class="flex flex-col sm:flex-row gap-4"><button id="upload-doc-btn" class="bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 p-6 rounded-xl flex flex-col items-center justify-center w-64 h-48 transition-all transform hover:scale-105"><i data-lucide="file-scan" class="w-12 h-12 text-blue-400 mb-4"></i><span class="text-lg font-semibold">✨ Upload & Analyze</span><span class="text-sm text-zinc-400">Scan and analyze a document</span></button><button id="doc-chatbot-btn" class="bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 p-6 rounded-xl flex flex-col items-center justify-center w-64 h-48 transition-all transform hover:scale-105"><i data-lucide="bot" class="w-12 h-12 text-purple-400 mb-4"></i><span class="text-lg font-semibold">Start Chatbot</span><span class="text-sm text-zinc-400">Ask legal questions directly</span></button><input type="file" id="doc-file-input" class="hidden" accept="image/png, image/jpeg"></div></div><div id="doc-analysis-container" class="hidden"><div id="doc-analysis-view" class="prose max-w-none prose-invert"></div><div id="doc-action-buttons" class="mt-6 flex items-center justify-center gap-4 border-t border-zinc-800 pt-6"></div><div id="doc-action-results" class="mt-6 prose max-w-none prose-invert"></div></div>`;
+            modalContainer.innerHTML = `<div id="one-minuter-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50 fade-in"><div class="glassmorphism rounded-xl shadow-2xl w-full max-w-2xl m-4"><div class="flex items-center justify-between p-4 border-b border-zinc-800/50"><h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="timer" class="w-5 h-5 text-yellow-400"></i>Your One-Minuter Briefing</h3><button class="modal-close-btn p-1 rounded-full hover:bg-zinc-800/50"><i data-lucide="x" class="w-5 h-5"></i></button></div><div id="one-minuter-content" class="p-6 space-y-4 prose prose-invert max-w-none max-h-[70vh] overflow-y-auto"></div></div></div><div id="info-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50 fade-in"><div class="glassmorphism rounded-xl shadow-2xl w-full max-w-2xl m-4"><div class="flex items-center justify-between p-4 border-b border-zinc-800/50"><h3 id="info-modal-title" class="text-lg font-semibold flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-blue-400"></i></h3><button class="modal-close-btn p-1 rounded-full hover:bg-zinc-800/50"><i data-lucide="x" class="w-5 h-5"></i></button></div><div id="info-modal-content" class="p-6 space-y-4 prose prose-invert max-w-none max-h-[70vh] overflow-y-auto"></div></div></div><div id="settings-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50 fade-in"><div class="glassmorphism rounded-xl shadow-2xl w-full max-w-md m-4"><div class="flex items-center justify-between p-4 border-b border-zinc-800/50"><h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5"></i>Settings</h3><button class="modal-close-btn p-1 rounded-full hover:bg-zinc-800/50"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-6 space-y-4"><div class="flex items-center justify-between"><label class="text-zinc-300">Enable Notifications</label><input type="checkbox" class="h-4 w-4 rounded text-blue-500 focus:ring-blue-500"></div><div class="flex items-center justify-between"><label class="text-zinc-300">Enable Alerts</label><input type="checkbox" class="h-4 w-4 rounded text-blue-500 focus:ring-blue-500"></div><div class="pt-4 text-sm text-zinc-500">Version: DjangO build</div></div></div></div><div id="help-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50 fade-in"><div class="glassmorphism rounded-xl shadow-2xl w-full max-w-md m-4"><div class="flex items-center justify-between p-4 border-b border-zinc-800/50"><h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="help-circle" class="w-5 h-5"></i>Help</h3><button class="modal-close-btn p-1 rounded-full hover:bg-zinc-800/50"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-6 prose prose-invert max-w-none"><h4>About Fdok</h4><p>Fdok is an AI-powered tool designed to help you identify and combat fake news and misinformation.</p></div></div></div>`;
+            document.getElementById('lang-popover').innerHTML = `<p class="px-4 py-2 text-sm font-semibold text-zinc-300">Select Language</p><hr class="border-zinc-700/50"><a href="#" class="lang-option block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50" data-lang="English">English</a><a href="#" class="lang-option block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50" data-lang="Hindi">हिन्दी (Hindi)</a><a href="#" class="lang-option block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50" data-lang="Malayalam">മലയാളം (Malayalam)</a><a href="#" class="lang-option block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50" data-lang="Kannada">ಕನ್ನಡ (Kannada)</a><a href="#" class="lang-option block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50" data-lang="Gujarati">ગુજરાતી (Gujarati)</a><a href="#" class="lang-option block px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800/50" data-lang="Punjabi">ਪੰਜਾਬੀ (Punjabi)</a>`;
+            document.getElementById('media-popover').innerHTML = `<a href="#" class="media-option flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800/50 rounded-t-lg"><i data-lucide="image" class="w-5 h-5 text-purple-400"></i> Upload from Gallery</a><a href="#" class="media-option flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800/50 rounded-b-lg"><i data-lucide="camera" class="w-5 h-5 text-green-400"></i> Open Camera</a>`;
+            populateFeed();
+        }
+        
+        // --- Event Listeners and UI Management ---
+        function setupEventListeners() {
+            document.getElementById('sidebar-logo-home-btn').addEventListener('click', () => switchAgentView('hub'));
+            document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); location.reload(); });
+            document.getElementById('profile-btn').addEventListener('click', () => { profileDropdown = document.getElementById('profile-dropdown'); if (profileDropdown) profileDropdown.classList.toggle('hidden'); });
+            document.getElementById('menu-toggle-btn').addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+            document.getElementById('bottom-nav-agent').addEventListener('click', () => switchTab('agent'));
+            document.getElementById('bottom-nav-feed').addEventListener('click', () => switchTab('feed'));
+            document.getElementById('new-chat-btn').addEventListener('click', () => switchAgentView('chat'));
+            document.getElementById('analysis-tools-toggle').addEventListener('click', () => document.getElementById('analysis-tools-options').classList.toggle('hidden'));
+            document.getElementById('link-agent-btn').addEventListener('click', () => switchAgentView('link'));
+            document.getElementById('doc-agent-btn').addEventListener('click', () => switchAgentView('doc'));
+            document.getElementById('news-categories-toggle').addEventListener('click', () => document.getElementById('news-categories-options').classList.toggle('hidden'));
+            document.getElementById('feed-tool-toggle').addEventListener('click', () => document.getElementById('feed-tool-options').classList.toggle('hidden'));
+            document.querySelectorAll('.news-category-btn').forEach(btn => btn.addEventListener('click', (e) => { filterFeedByCategory(btn.dataset.category); e.stopPropagation(); document.getElementById('news-categories-options').classList.add('hidden'); }));
+            document.getElementById('one-minuter-btn').addEventListener('click', (e) => { handleOneMinuter(); e.stopPropagation(); document.getElementById('feed-tool-options').classList.add('hidden'); });
+            document.getElementById('ask-bot-news-btn').addEventListener('click', (e) => { switchTab('agent'); switchAgentView('chat'); promptInput.value = "Tell me more about the latest news."; promptInput.focus(); autoResizeTextarea(); e.stopPropagation(); document.getElementById('feed-tool-options').classList.add('hidden'); });
+            document.querySelectorAll('.action-orb').forEach(card => card.addEventListener('click', () => handleActionCard(card.dataset.action, card.dataset.view, card.dataset.prompt)));
+            const langBtn = document.getElementById('lang-btn'), mediaUploadBtn = document.getElementById('media-upload-btn');
+            langBtn.addEventListener('click', () => document.getElementById('lang-popover').classList.toggle('hidden'));
+            mediaUploadBtn.addEventListener('click', () => document.getElementById('media-popover').classList.toggle('hidden'));
+            document.addEventListener('click', (e) => { const pD = document.getElementById('profile-dropdown'), lP = document.getElementById('lang-popover'), mP = document.getElementById('media-popover'); if (profileBtn && !profileBtn.contains(e.target) && pD && !pD.contains(e.target)) pD.classList.add('hidden'); if (langBtn && !langBtn.contains(e.target) && lP && !lP.contains(e.target)) lP.classList.add('hidden'); if (mediaUploadBtn && !mediaUploadBtn.contains(e.target) && mP && !mP.contains(e.target)) mP.classList.add('hidden'); });
+            document.getElementById('analysis-hub-view').addEventListener('click', (e) => { if (e.target.closest('#analyze-link-btn')) analyzeLink(); if (e.target.closest('#upload-doc-btn')) document.getElementById('doc-file-input').click(); if (e.target.closest('#doc-chatbot-btn')) switchAgentView('chat'); });
+            document.getElementById('analysis-hub-view').addEventListener('change', (e) => { if (e.target.id === 'doc-file-input') handleDocUpload(e); });
+            sendBtn.addEventListener('click', handleSendMessage);
+            promptInput.addEventListener('input', autoResizeTextarea);
+            promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } });
+            document.getElementById('feed-search-input').addEventListener('input', (e) => filterFeedByCategory(currentFeedCategory, e.target.value.toLowerCase()));
+            document.getElementById('feed-grid').addEventListener('click', (e) => { const learnMoreBtn = e.target.closest('.learn-more-btn'); if (learnMoreBtn) handleLearnMore(learnMoreBtn.dataset.topic); });
+            modalContainer.addEventListener('click', (e) => { if(e.target.classList.contains('modal-close-btn') || e.target.closest('.modal-close-btn')) { const modal = e.target.closest('.fixed'); if (modal) closeModal(modal); } });
+            document.getElementById('settings-btn').addEventListener('click', () => openModal(document.getElementById('settings-modal')));
+            document.getElementById('help-btn').addEventListener('click', () => openModal(document.getElementById('help-modal')));
+        }
+
+        function handleActionCard(action, view, prompt) { if (action === 'view') { switchAgentView(view); } else if (action === 'prefill') { switchAgentView('chat'); promptInput.value = prompt; promptInput.focus(); autoResizeTextarea(); } }
+        
+        function switchTab(tabName) {
+            const analysisHubView = document.getElementById('analysis-hub-view'), feedView = document.getElementById('feed-view'), bottomNavAgent = document.getElementById('bottom-nav-agent'), bottomNavFeed = document.getElementById('bottom-nav-feed'), chatHistoryContainer = document.getElementById('chat-history-container'), articleHistoryContainer = document.getElementById('article-history-container');
+            if (tabName === 'agent') {
+                analysisHubView.classList.remove('hidden'); feedView.classList.add('hidden'); bottomNavAgent.classList.add('bottom-nav-active'); bottomNavFeed.classList.remove('bottom-nav-active'); document.getElementById('view-title').textContent = 'Fdok Agent'; agentSidebar.classList.remove('hidden'); feedSidebar.classList.add('hidden'); chatHistoryContainer.classList.remove('hidden'); articleHistoryContainer.classList.add('hidden'); if(currentAgentView === 'hub' || currentAgentView === 'chat') { switchAgentView('hub'); } else { switchAgentView(currentAgentView); }
+            } else if (tabName === 'feed') {
+                analysisHubView.classList.add('hidden'); feedView.classList.remove('hidden'); promptArea.classList.add('hidden'); bottomNavAgent.classList.remove('bottom-nav-active'); bottomNavFeed.classList.add('bottom-nav-active'); document.getElementById('view-title').textContent = 'Fdok Feed'; agentSidebar.classList.add('hidden'); feedSidebar.classList.remove('hidden'); chatHistoryContainer.classList.add('hidden'); articleHistoryContainer.classList.remove('hidden'); filterFeedByCategory('misinfo');
+            }
+            closeSidebar();
+        }
+
+        function switchAgentView(viewName) {
+            currentAgentView = viewName;
+            const views = { hub: document.getElementById('agent-hub-view'), chat: document.getElementById('chat-agent-view'), link: document.getElementById('link-agent-view'), doc: document.getElementById('doc-agent-view') };
+            for (const key in views) { if (views[key]) views[key].classList.add('hidden'); }
+            promptArea.classList.add('hidden');
+            const newView = views[viewName];
+            if (newView) {
+                if (viewName === 'chat') { promptArea.classList.remove('hidden'); if (chatMessagesContainer.children.length === 0) { addMessageToUI('model', "Welcome! How can I help you combat misinformation today?"); } }
+                newView.classList.remove('hidden');
+            }
+        }
+
+        // --- Feed Logic ---
+        const allArticles = [
+            { category: 'misinfo', title: "New 'Urgent Package' SMS Scam Targeting Shoppers", summary: "A new wave of phishing scams uses fake delivery notifications to steal your credit card details.", tag: "Phishing", color: "blue" },
+            { category: 'misinfo', title: "AI-Generated Fake News Spreads on Social Media", summary: "Experts warn about the rise of hyper-realistic fake articles and images created by AI.", tag: "Deepfake", color: "purple" },
+            { category: 'misinfo', title: "Investment Scams on WhatsApp Promise Unrealistic Returns", summary: "Scammers are luring victims into fake investment groups, resulting in significant financial loss.", tag: "Financial Scam", color: "red" },
+            { category: 'misinfo', title: "How to Spot a Fake Online Store", summary: "Learn the key red flags to look for before making a purchase from an unfamiliar e-commerce site.", tag: "E-commerce", color: "green" },
+            { category: 'politics', title: "Global Leaders Meet for Climate Summit", summary: "Negotiations are underway to establish new international goals for reducing carbon emissions.", tag: "Politics", color: "gray" },
+            { category: 'politics', title: "New Digital Privacy Bill Proposed", summary: "Lawmakers are debating a comprehensive bill aimed at protecting consumer data online.", tag: "Legislation", color: "gray" },
+            { category: 'politics', title: "Election Meddling Concerns Rise with Deepfakes", summary: "Authorities issue warnings about the potential for AI-generated videos to influence upcoming elections.", tag: "Deepfake", color: "yellow" },
+            { category: 'sports', title: "India Wins T20 World Cup in Thriller", summary: "A last-ball six secures a dramatic victory over Australia in the T20 final.", tag: "Cricket", color: "orange" },
+            { category: 'sports', title: "Transfer Window Sees Record Spending", summary: "Top football clubs have spent billions on new players during the summer transfer window.", tag: "Football", color: "orange" },
+            { category: 'sports', title: "Match-Fixing Scandal Rocks Esports League", summary: "Several high-profile players have been suspended pending an investigation into alleged match-fixing.", tag: "Esports", color: "indigo" },
+        ];
+
+        function populateFeed() {
+            const feedGrid = document.getElementById('feed-grid');
+            if (!feedGrid) return;
+            feedGrid.innerHTML = allArticles.map(article => `<div class="article-card glassmorphism rounded-xl overflow-hidden group transition-all duration-300 transform hover:scale-105 hover:border-blue-500/50" data-category="${article.category}" data-title="${article.title}"><div class="relative overflow-hidden"><img src="https://placehold.co/600x400/0f172a/3b82f6?text=${article.tag}" alt="Article image" class="transition-transform duration-300 group-hover:scale-110"><div class="absolute top-3 right-3 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"><i data-lucide="arrow-right" class="w-4 h-4 text-white"></i></div></div><div class="p-4"><div class="flex justify-between items-center mb-2"><span class="inline-block bg-${article.color}-500/20 text-${article.color}-400 text-xs font-semibold px-2 py-1 rounded-full">${article.tag}</span>${article.category === 'misinfo' ? `<button class="learn-more-btn p-1 rounded-full hover:bg-zinc-700/50" data-topic="${article.tag}" title="Learn more about ${article.tag}"><i data-lucide="info" class="w-4 h-4 text-zinc-400"></i></button>` : ''}</div><h3 class="font-bold text-lg mb-2 text-zinc-100">${article.title}</h3><p class="text-sm text-zinc-400">${article.summary}</p></div></div>`).join('');
+            lucide.createIcons();
+        }
+
+        function filterFeedByCategory(category, searchTerm = '') {
+            if (category) currentFeedCategory = category;
+            const feedGrid = document.getElementById('feed-grid');
+            if (!feedGrid) return;
+            const articles = Array.from(feedGrid.querySelectorAll('.article-card'));
+            let delay = 0;
+            articles.forEach(article => {
+                const isCategoryMatch = currentFeedCategory === 'all' || article.dataset.category === currentFeedCategory;
+                const isSearchMatch = article.dataset.title.toLowerCase().includes(searchTerm);
+                if (isCategoryMatch && isSearchMatch) {
+                    article.style.display = ''; article.classList.add('stagger-in'); article.style.animationDelay = `${delay}ms`; delay += 50;
+                } else {
+                    article.style.display = 'none'; article.classList.remove('stagger-in');
+                }
+            });
+            if (category) { document.querySelectorAll('.news-category-btn').forEach(btn => { btn.classList.remove('sidebar-btn-active'); if(btn.dataset.category === category) btn.classList.add('sidebar-btn-active'); }); }
+        }
+        
+        function openModal(modalElement) { if(modalElement) { modalElement.classList.remove('hidden'); lucide.createIcons(); } }
+        function closeModal(modalElement) { if(modalElement) modalElement.classList.add('hidden'); }
+        
+        // --- AI & Core Functions ---
+        async function handleOneMinuter() {
+            const modal = document.getElementById('one-minuter-modal'), contentArea = document.getElementById('one-minuter-content');
+            openModal(modal);
+            const date = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            contentArea.innerHTML = `<h4 id="one-minuter-date">Top Headlines for ${date}</h4><div class="flex justify-center items-center p-8"><div class="pulsing-logo"><svg class="w-10 h-10 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`;
+            const responseText = await callGeminiAPI(null, { type: 'one-minuter' });
+            contentArea.innerHTML = `<h4 id="one-minuter-date">Top Headlines for ${date}</h4>${marked.parse(responseText)}`;
+        }
+
+        async function handleLearnMore(topic) {
+            const modal = document.getElementById('info-modal'), title = document.getElementById('info-modal-title'), contentArea = document.getElementById('info-modal-content');
+            openModal(modal);
+            title.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-blue-400"></i> What is ${topic}?`;
+            lucide.createIcons();
+            contentArea.innerHTML = `<div class="flex justify-center items-center p-8"><div class="pulsing-logo"><svg class="w-10 h-10 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`;
+            const responseText = await callGeminiAPI(null, { type: 'learn-more' });
+            contentArea.innerHTML = marked.parse(responseText);
+        }
+
+        async function callGeminiAPI(payload, { type = '' } = {}) { 
+             await new Promise(res => setTimeout(res, 500)); // Simulate network delay
+             return getDemoResponse(type);
+        }
+
+        async function getDemoResponse(type) { 
+            if (type === 'one-minuter') return `* **Politics:** Global leaders convene for the annual climate summit.\n* **Technology:** A major breakthrough in quantum computing has been announced.\n* **Sports:** India clinches the T20 World Cup in a last-ball thriller.`; 
+            if (type === 'learn-more') return `### What is Phishing?\n\n**Phishing** is a type of online scam where criminals impersonate legitimate organizations (like banks, social media sites, or delivery services) via email, text message, or other means to steal sensitive information. \n\n**Common Example:**\nYou receive an email that looks like it's from Netflix, saying there's a problem with your payment. It asks you to click a link and re-enter your credit card details. The website is a fake, and the criminals steal your information.`; 
+            if(type === 'link-analysis') return `### **Link Analysis Report (Demo)**\n\n**Risk Assessment:** <span style="color: #FBBF24;">CAUTION</span>\n\n**Details:**\n- **URL Obfuscation:** The link uses a common URL shortening service (bit.ly). While often legitimate, this technique can be used to hide the true, malicious destination.\n- **Domain Reputation:** The final destination domain has a low trust score based on our simulated analysis.\n\n**Recommendation:**\nDo not enter any personal or financial information. Proceed with extreme caution or avoid visiting the link altogether.`;
+            if(type === 'doc-analysis') return `### **Document Analysis Report (Demo)**\n\n**Document Type:** Identity Card (Simulated)\n\n**Verification Checks:**\n- **Layout Analysis:** Consistent with standard ID templates.\n- **Seal/Emblem Detection:** Emblem appears to be a generic placeholder, not a recognized official seal.\n- **Font Consistency:** All text uses a uniform, standard font. No obvious signs of digital alteration.\n\n**Conclusion:**\nThe document appears to be a template. While it has no clear signs of forgery, its authenticity cannot be verified without comparing it to an official source.`;
+            return `This is a simulated AI response from Fdok. In a real scenario, I would process your query by cross-referencing multiple verified sources, checking for logical fallacies, and analyzing the emotional tone to detect potential bias or manipulation.`;
+        }
+        function toggleSidebar() { sidebar.classList.toggle('-translate-x-full'); sidebarOverlay.classList.toggle('hidden'); }
+        function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('hidden'); }
+        function autoResizeTextarea() { if(!promptInput) return; promptInput.style.height = 'auto'; const newHeight = Math.min(200, promptInput.scrollHeight); promptInput.style.height = `${newHeight}px`; }
+        function addMessageToUI(sender, text, isHtml = false) { const messageElement = document.createElement('div'); messageElement.classList.add('flex', 'items-start', 'gap-4', 'fade-in'); if (sender === 'user') { messageElement.classList.add('justify-end'); messageElement.innerHTML = `<div class="bg-blue-600 p-4 rounded-lg rounded-br-none max-w-3xl"><p class="text-white">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p></div><div class="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-sm shrink-0">U</div>`; } else { const langBadge = currentLanguage !== 'English' ? `<span class="text-xs font-medium text-zinc-400 bg-zinc-700/50 px-2 py-0.5 rounded-full">${currentLanguage}</span>` : ''; let contentHtml; if (isHtml) { messageElement.id = 'loading-indicator'; contentHtml = `<div class="flex justify-center items-center p-4"><div class="pulsing-logo"><svg class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`; } else { contentHtml = `<div class="prose max-w-none prose-invert text-zinc-300">${marked.parse(text)}</div>`; } messageElement.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">F</div><div class="glassmorphism p-4 rounded-lg rounded-tl-none max-w-3xl w-full"><p class="font-bold mb-1 flex items-center justify-between">Fdok Agent ${langBadge}</p>${contentHtml}</div>`; } if (chatMessagesContainer) { chatMessagesContainer.appendChild(messageElement); chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; } }
+        async function handleSendMessage() { const promptText = promptInput.value.trim(); if (!promptText) return; addMessageToUI('user', promptText); promptInput.value = ''; autoResizeTextarea(); addMessageToUI('model', '', true); const responseText = await callGeminiAPI(); const loadingIndicator = document.getElementById('loading-indicator'); if(loadingIndicator) loadingIndicator.remove(); addMessageToUI('model', responseText); }
+        
+        document.addEventListener('DOMContentLoaded', initializeFdokApp);
+    </script>
+</body>
+</html>
